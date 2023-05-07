@@ -1,5 +1,3 @@
-package ppss;
-
 import org.dbunit.Assertion;
 import org.dbunit.IDatabaseTester;
 import org.dbunit.JdbcDatabaseTester;
@@ -28,9 +26,9 @@ public class ClienteDAO_IT {
   @BeforeEach
   public void setUp() throws Exception {
 
-    String cadena_conexionDB = "cadena de conexion";
-    databaseTester = new JdbcDatabaseTester("clase del driver jdbc para poder acceder a la BD",
-            "cadena de conexion", "login", "password");
+    String cadena_conexionDB = "jdbc:mysql://localhost:3306/DBUNIT?allowPublicKeyRetrieval=true&useSSL=false";
+    databaseTester = new JdbcDatabaseTester("com.mysql.cj.jdbc.Driver",
+            cadena_conexionDB, "root", "ppss");
     connection = databaseTester.getConnection();
 
     clienteDAO = new ClienteDAO();
@@ -85,6 +83,55 @@ public class ClienteDAO_IT {
     ITable expectedTable = expectedDataSet.getTable("cliente");
 
     Assertion.assertEquals(expectedTable, actualTable);
+  }
+
+  @Test
+  public void testUpdate() throws Exception {
+    Cliente cliente =  new Cliente(1,"John", "Smith");
+    cliente.setDireccion("Other Street");
+    cliente.setCiudad("Newcity");
+
+    //inicializamos la BD
+    IDataSet dataSet = new FlatXmlDataFileLoader().load("/cliente-esperado.xml");
+    databaseTester.setDataSet(dataSet);
+    databaseTester.onSetup();
+
+    //invocamos a nuestro SUT
+    Assertions.assertDoesNotThrow(()->clienteDAO.update(cliente));
+
+    IDataSet databaseDataSet = connection.createDataSet();
+    //Recuperamos los datos de la tabla cliente
+    ITable actualTable = databaseDataSet.getTable("cliente");
+
+    //creamos el dataset con el resultado esperado
+    IDataSet expectedDataSet = new FlatXmlDataFileLoader().load("/cliente-esperado-updated.xml");
+    ITable expectedTable = expectedDataSet.getTable("cliente");
+
+    Assertion.assertEquals(expectedTable, actualTable);
+  }
+
+  @Test
+  public void testRetrieve() throws Exception {
+    Cliente clienteEsperado =  new Cliente(1,"John", "Smith");
+    clienteEsperado.setDireccion("1 Main Street");
+    clienteEsperado.setCiudad("Anycity");
+    int clienteID = 1;
+
+    //inicializamos la BD
+    IDataSet dataSet = new FlatXmlDataFileLoader().load("/cliente-esperado.xml");
+    databaseTester.setDataSet(dataSet);
+    databaseTester.onSetup();
+
+    //invocamos a nuestro SUT
+    Cliente clienteReal = Assertions.assertDoesNotThrow(()->clienteDAO.retrieve(clienteID));
+
+    Assertions.assertAll("Campos de cliente",
+            () -> Assertions.assertEquals(clienteEsperado.getNombre(), clienteReal.getNombre()),
+            () -> Assertions.assertEquals(clienteEsperado.getApellido(), clienteReal.getApellido()),
+            () -> Assertions.assertEquals(clienteEsperado.getCiudad(), clienteReal.getCiudad()),
+            () -> Assertions.assertEquals(clienteEsperado.getDireccion(), clienteReal.getDireccion()),
+            () -> Assertions.assertEquals(clienteEsperado.getId(), clienteReal.getId())
+    );
   }
 
 }
