@@ -30,10 +30,10 @@ public class TestLogin {
         driver.findElement(By.cssSelector("#header-account > div > ul > li.last > a")).click();
         Assertions.assertEquals("Customer Login", driver.getTitle());
         driver.findElement(By.id("email")).sendKeys("edu.duta96@gmail.com");
-        driver.findElement(By.id("send2"));
+        driver.findElement(By.id("send2")).click();
         driver.findElement(By.id("advice-required-entry-pass")).isDisplayed();
         driver.findElement(By.id("pass")).sendKeys("passwordExample");
-        driver.findElement(By.id("send2"));
+        driver.findElement(By.id("send2")).click();
         Assertions.assertEquals("My Account", driver.getTitle());
     }
 
@@ -45,7 +45,7 @@ public class TestLogin {
         Assertions.assertEquals("Customer Login", driver.getTitle());
         driver.findElement(By.id("email")).sendKeys("edu.duta96@gmail.com");
         driver.findElement(By.id("pass")).sendKeys("passwordxample");
-        driver.findElement(By.id("send2"));
-        Assertions.assertEquals("Invalid login or password", driver.findElement(By.cssSelector("body > div > div.page > div.main-container.col1-layout > div > div > div.account-login > ul > li > ul > li > span")).getText());
+        driver.findElement(By.id("send2")).click();
+        Assertions.assertEquals("Invalid login or password.", driver.findElement(By.cssSelector("body > div > div.page > div.main-container.col1-layout > div > div > div.account-login > ul > li > ul > li > span")).getText());
     }
 }
